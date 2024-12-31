@@ -19,7 +19,9 @@ let
 in pkgs.stdenvNoCC.mkDerivation {
   name = "private-git-ssh-fetcher";
   builder = pkgs.writeShellScript "private-git-ssh-fetcher" ''
-      GIT_SSH_COMMAND='${pkgs.openssh}/bin/ssh -i ${privateKeyFile} -o IdentitiesOnly=yes -o UserKnownHostsFile=${remoteKnownHostsFile}' ${pkgs.git}/bin/git clone ${sshUrl} $out
+      ${pkgs.coreutils}/bin/cp ${privateKeyFile} privateKeyFile
+      ${pkgs.coreutils}/bin/chmod 0400 privateKeyFile
+      GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh -i $PWD/privateKeyFile -o IdentitiesOnly=yes -o UserKnownHostsFile=${remoteKnownHostsFile}" ${pkgs.git}/bin/git clone ${sshUrl} $out
       pushd $out
       ${pkgs.git}/bin/git checkout ${version}
       popd
