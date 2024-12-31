@@ -1,10 +1,10 @@
 {
-  pkgs
-  , lib
-  , sshUrl
-  , privateKeyFile
-  , version
-  , sha256 ? null
+  pkgs,
+  lib,
+  sshUrl,
+  privateKeyFile,
+  version,
+  sha256 ? null,
 }:
 let
   _sha256 = if sha256 != null then sha256 else lib.fakeHash;
@@ -16,17 +16,18 @@ let
     gitlab.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBFSMqzJeV9rUzU4kWitGjeR4PWSa29SPqJ1fVkhtj3Hw9xjLVXVYrU9QlYWrOLXBpQ6KWjbjTDTdDkoohFzgbEY=
     gitlab.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAfuCHKVTjquxvt6CM6tdG4SLp1Btn/nOeHHE5UOzRdf
   '';
-in pkgs.stdenvNoCC.mkDerivation {
+in
+pkgs.stdenvNoCC.mkDerivation {
   name = "private-git-ssh-fetcher";
   builder = pkgs.writeShellScript "private-git-ssh-fetcher" ''
-      ${pkgs.coreutils}/bin/cp ${privateKeyFile} privateKeyFile
-      ${pkgs.coreutils}/bin/chmod 0400 privateKeyFile
-      GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh -i $PWD/privateKeyFile -o IdentitiesOnly=yes -o UserKnownHostsFile=${remoteKnownHostsFile}" ${pkgs.git}/bin/git clone ${sshUrl} $out
-      pushd $out
-      ${pkgs.git}/bin/git checkout ${version}
-      popd
-      ${pkgs.coreutils}/bin/rm -rf $out/.git
-    '';
+    ${pkgs.coreutils}/bin/cp ${privateKeyFile} privateKeyFile
+    ${pkgs.coreutils}/bin/chmod 0400 privateKeyFile
+    GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh -i $PWD/privateKeyFile -o IdentitiesOnly=yes -o UserKnownHostsFile=${remoteKnownHostsFile}" ${pkgs.git}/bin/git clone ${sshUrl} $out
+    pushd $out
+    ${pkgs.git}/bin/git checkout ${version}
+    popd
+    ${pkgs.coreutils}/bin/rm -rf $out/.git
+  '';
   outputHashAlgo = "sha256";
   outputHashMode = "recursive";
   outputHash = _sha256;
